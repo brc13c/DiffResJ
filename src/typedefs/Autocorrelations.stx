@@ -1,0 +1,40 @@
+<TYPES>
+	<!-- This defines types for autocorrelation data. -->
+	
+	<!-- ************* -->
+	<!-- IMPORTS       -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- SUBSTRUCTURES -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- TOPLEVELTYPES -->
+	<!-- ************* -->
+	
+	<TYPE>
+		<!-- This denotes the lag for the following crop of autocorrelations. -->
+		<NAME>TIME</NAME>
+		<!-- The lag. -->
+		<FLOAT>
+			<NAME>LAG</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>1</LENGTH>
+		</FLOAT>
+	</TYPE>
+	
+	<TYPE>
+		<!-- The autocorrelation of another particles velocity with the current lag. -->
+		<NAME>AUTOCORRELATION</NAME>
+		<!-- The autocorrelation. -->
+		<FLOAT>
+			<NAME>VALUE</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>1</LENGTH>
+		</FLOAT>
+	</TYPE>
+	
+</TYPES>

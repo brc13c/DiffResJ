@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head></head>
+<body>These programs make use of two custom formats, one based on XML, and a binary format.<br><br>The
+XML format takes the following form. The top level element is
+"&lt;TRAJECTORY&gt;", which contains a number of "&lt;TIME&gt;" and
+"&lt;PARTICLE&gt;" elements. Each time element marks a new time in the
+simulation (with a "&lt;NEWTIME&gt;" element containing the time), and
+each particle element provides the location and velocity of a particle
+(with many "&lt;POSITION&gt;" elements containing location in each
+dimension, and many "&lt;VELOCITY&gt;" elements containg the velocity
+in each dimension). <a href="ExampleTrajectory.xml">An example</a> might make this clearer.<br><br>For
+the binary format, each "&lt;TIME&gt;" element produces 0x00000001,
+followed by the new time as a double precision floating point number
+(big-endian). Each "&lt;PARTICLE&gt;" element produces 0x00000002,
+followed by 16 bits describing the number of position elements
+(big-endian), then each position element in order as a double, then 16
+bits describing the number of velocity elements, then each velocity
+element as a double. <a href="ExampleTrajectory.mdp.sdb.txt">An example</a> hex-dump might make this clearer (this example is the XML example as a binary file).<br><hr style="width: 100%; height: 2px;"><a href="README.html">Back to Index</a>
+</body></html>

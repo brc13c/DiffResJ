@@ -1,0 +1,342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+</head>
+<body>
+Once you have your data in the <a href="FileFormat.html">mdp.sdb</a>
+format, there are
+a few all-in-one programs that can be run from the command line.<br>
+<br>
+<hr><br>
+There are multiple options for estimating the diffusion coefficient
+using velocity. If your data are small enough to fit into RAM, you can
+use the VACnRAM program. The arguments to this program are:<br>
+<table style="width: 75%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="text-align: center; width: 30%;">-src=filename</td>
+<td style="text-align: left;">The trajectory file to
+calculate the diffusion coefficient from.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-dst=filename</td>
+<td style="text-align: left;">The file to write the
+diffusion coefficient and error to.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-num=integer</td>
+<td style="text-align: left;">The number of
+bootstrap samples to take.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-dim=integer</td>
+<td style="text-align: left;">The dimensionality of
+the simulation.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-vcr=real</td>
+<td style="text-align: left;">A cutoff threshold for
+which to stop integrating autocorrelation.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-alg=string</td>
+<td style="text-align: left;">The algorithm to use.
+One of full, onepass, multitau or cliprepeat. Default is full.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-agg=integer</td>
+<td>If using multitau, the number of timesteps to skip at
+each level. Default is 16.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-clp=integer</td>
+<td>If using cliprepeat, the number of timesteps at which
+to reset lag to zero.</td>
+</tr>
+</tbody>
+</table>
+<br>
+As an example, if
+you have a file named Trajectory.mdp.sdb containing one dimensional
+simulation data, the following command; <br>
+<br>
+java -cp PATH/TO/DIFFRESJ VACnRAM -src=Trajectory.mdp.sdb
+-dst=Results.dif.sdx -num=10000 -dim=1 -vcr=0.05<br>
+<br>
+will examine the velocity data in the file Trajectory.mdp.sdb and
+generate a file named
+Results.dif.sdx that contains an estimate of the value and error (found
+using 10000 resamples)
+of the diffusion coefficient, stopping integration of the
+autocorrelation once the mean square autocorrelation drops below 0.05
+times the square of the initial autocorrelation squared.<br>
+<br>
+If your data won't all fit in RAM, you will need to use one of the
+programs that pipe in data from the hard drive. The first of these,
+VAC, will perform a full calculation of the autocorrelation. The
+arguments to this program are:<br>
+<table style="width: 75%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="width: 30%; text-align: center;">-src=filename</td>
+<td>The trajectory file to calculate the diffusion
+coefficient from.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-dst=filename</td>
+<td>The file to write the diffusion coefficient and error
+to.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-wrk=foldername</td>
+<td>A folder to use for storing temporary files.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-num=integer</td>
+<td>The number of bootstrap samples to take.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-dim=integer</td>
+<td>The dimensionality of the simulation.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-vcr=real</td>
+<td>A cutoff threshold for which to stop integrating
+autocorrelation.</td>
+</tr>
+</tbody>
+</table>
+<br>
+Using the same example, the following command; <br>
+<br>
+java -cp PATH/TO/DIFFRESJ VAC -src=Trajectory.mdp.sdb -wrk=working
+-dst=Results.dif.sdx -num=10000 -dim=1 -vcr=0.05<br>
+<br>
+Will perform the same calculation as VACnRAM (-alg=full), just keeping
+data outside of main memory. However, since the full calculation is
+quadratic in the number of timesteps, there are additional programs
+that make fewer passes through the data. The first is VACOnePass, which
+takes the same arguments as VAC, but only makes one pass through the
+trajectory. The example command is<br>
+<br>
+java -cp PATH/TO/DIFFRESJ VACOnePass -src=Trajectory.mdp.sdb
+-wrk=working -dst=Results.dif.sdx -num=10000 -dim=1 -vcr=0.05<br>
+<br>
+The
+next program is VACClipRepeat, which also makes one pass, but which
+only calculates autocorrelations for up to a specified number of steps,
+past which it clips and repeats (averaging all results at the end). Takes the same arguments as VAC, with one addition:<br>
+<table style="width: 75%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+
+
+
+
+
+
+<tr>
+<td style="text-align: center; width: 30%;">-clp=integer</td>
+<td>The number of timesteps past which to repeat
+calculations.</td>
+</tr>
+</tbody>
+</table>
+<br>
+The example command will only calculate up to 500 autocorrelations.<br>
+<br>
+java -cp PATH/TO/DIFFRESJ VACClipRepeat -src=Trajectory.mdp.sdb
+-wrk=working -dst=Results.dif.sdx -num=10000 -dim=1 -vcr=0.05 -clp=500<br>
+<br>
+The
+final program is VACMultiTau, which takes the same arguments as VAC,
+plus the number of lower level blocks to aggregate into a higher level
+block.<br>
+<br>
+<table style="width: 75%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+
+
+
+
+
+
+<tr>
+<td style="text-align: center; width: 30%;">-agg=integer</td>
+<td>The number of timesteps to aggregate (the factor to coarsen long lags by).</td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+The following example expands the horizon by a factor of 16 at each
+level..<br>
+<br>
+java -cp PATH/TO/DIFFRESJ&nbsp;VACMultiTau -src=Trajectory.mdp.sdb
+-wrk=working -dst=Results.dif.sdx -num=10000 -dim=1 -vcr=0.05 -agg=16<br>
+<br>
+<hr><br><br>
+There are multiple options for estimating the diffusion coefficient
+using position. If your data are small enough to fit into RAM, you can
+use the MSDnRAM program. The arguments to this program are:<br>
+<table style="width: 75%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="text-align: center; width: 30%;">-src=filename</td>
+<td style="text-align: left;">The trajectory file to
+calculate the diffusion coefficient from.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-dst=filename</td>
+<td style="text-align: left;">The file to write the
+diffusion coefficient and error to.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-num=integer</td>
+<td style="text-align: left;">The number of
+bootstrap samples to take.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-dim=integer</td>
+<td style="text-align: left;">The dimensionality of
+the simulation.</td>
+</tr>
+<tr><td style="text-align: center;">-cur=real</td><td>The starting curvature threshold: data will be skipped until curvature drops below this threshold.</td></tr><tr><td style="text-align: center;">-sig=real</td><td>The late signal to noise threshold. Data after the signal to noise ratio drops below this will be ignored.</td></tr><tr><td style="text-align: center;">-wls</td><td>Sets this program to use weighted least squares. By default, unweighted is used.</td></tr>
+<tr>
+<td style="text-align: center;">-alg=string</td>
+<td style="text-align: left;">The algorithm to use.
+One of full, onepass, multitau or cliprepeat. Default is full.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-agg=integer</td>
+<td>If using multitau, the number of timesteps to skip at
+each level. Default is 16.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-clp=integer</td>
+<td>If using cliprepeat, the number of timesteps at which
+to reset lag to zero.</td>
+</tr>
+</tbody>
+</table>
+<br>
+As an example, if
+you have a file named Trajectory.mdp.sdb containing one dimensional
+simulation data, the following command; <br>
+<br>
+java -cp PATH/TO/DIFFRESJ MSDnRAM -src=Trajectory.mdp.sdb
+-dst=Results.dif.sdx -num=10000 -cur=0.01 -sig=2 -dim=1<br><br>
+will find the diffusion coefficient by fitting a line to the mean
+square displacement curve (discarding
+data until the curvature drops below 0.01, and discarding data after
+the signal to noise drops below 2).
+It will create an XML file named Results.dif.sdx that contains the
+value and error (found using 10000 resamples).<br>
+<br>
+will examine the position data in the file Trajectory.mdp.sdb and
+generate a file named
+Results.dif.sdx that contains an estimate of the value and error (found
+using 10000 resamples)
+of the diffusion coefficient, discarding data until the curvature drops
+below 0.01 and discarding data after the signal to noise ratio drops
+below 2.0.<br>
+<br>
+If your data won't all fit in RAM, you will need to use one of the
+programs that pipe in data from the hard drive. The first of these,
+MSD, will perform a full calculation of the autocorrelation. The
+arguments to this program are:<br>
+<table style="width: 75%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+<tr>
+<td style="width: 30%; text-align: center;">-src=filename</td>
+<td>The trajectory file to calculate the diffusion
+coefficient from.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-dst=filename</td>
+<td>The file to write the diffusion coefficient and error
+to.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-wrk=foldername</td>
+<td>A folder to use for storing temporary files.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-num=integer</td>
+<td>The number of bootstrap samples to take.</td>
+</tr>
+<tr>
+<td style="text-align: center;">-dim=integer</td>
+<td>The dimensionality of the simulation.</td>
+</tr>
+<tr><td style="text-align: center;">-cur=real</td><td>The starting curvature threshold: data will be skipped until curvature drops below this threshold.</td></tr><tr><td style="text-align: center;">-sig=real</td><td>The late signal to noise threshold. Data after the signal to noise ratio drops below this will be ignored.</td></tr>
+</tbody>
+</table>
+<br>
+Using the same example, the following command; <br>
+<br>
+java -cp PATH/TO/DIFFRESJ MSD -src=Trajectory.mdp.sdb -wrk=working
+-dst=Results.dif.sdx -num=10000 -dim=1 -cur=0.01 -sig=2<br>
+<br>
+Will perform the same calculation as MSDnRAM (-alg=full), just keeping
+data outside of main memory. However, since the full calculation is
+quadratic in the number of timesteps, there are additional programs
+that make fewer passes through the data. The first is MSDOnePass, which
+takes the same arguments as MSD, but only makes one pass through the
+trajectory. The example command is<br>
+<br>
+java -cp PATH/TO/DIFFRESJ MSDOnePass -src=Trajectory.mdp.sdb
+-wrk=working -dst=Results.dif.sdx -num=10000 -dim=1 -cur=0.01 -sig=2<br>
+<br>
+The
+next program is MSDClipRepeat, which also makes one pass, but which
+only calculates squared displacements for up to a specified number of steps,
+past which it clips and repeats (averaging all results at the end). Takes the same arguments as MSD, with one addition:<br>
+<table style="width: 75%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+
+
+
+
+
+
+<tr>
+<td style="text-align: center; width: 30%;">-clp=integer</td>
+<td>The number of timesteps past which to repeat
+calculations.</td>
+</tr>
+</tbody>
+</table>
+<br>
+The example command will only calculate up to 500 autocorrelations.<br>
+<br>
+java -cp PATH/TO/DIFFRESJ MSDClipRepeat -src=Trajectory.mdp.sdb
+-wrk=working -dst=Results.dif.sdx -num=10000 -dim=1 -cur=0.01 -sig=2 -clp=500<br>
+<br>
+The
+final program is MSDMultiTau, which takes the same arguments as MSD,
+plus the number of lower level blocks to aggregate into a higher level
+block.<br>
+<br>
+<table style="width: 75%; text-align: left; margin-left: auto; margin-right: auto;" border="1" cellpadding="2" cellspacing="2">
+<tbody>
+
+
+
+
+
+
+<tr>
+<td style="text-align: center; width: 30%;">-agg=integer</td>
+<td>The number of timesteps to aggregate (the factor to coarsen long lags by).</td>
+</tr>
+</tbody>
+</table>
+<br>
+<br>
+The following example expands the horizon by a factor of 16 at each
+level..<br>
+<br>
+java -cp PATH/TO/DIFFRESJ MSDMultiTau -src=Trajectory.mdp.sdb
+-wrk=working -dst=Results.dif.sdx -num=10000 -dim=1 -cur=0.01 -sig=2 -agg=16<br><br>
+<hr>
+<a href="README.html">Back to Index</a>
+</body></html>

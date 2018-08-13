@@ -1,0 +1,27 @@
+<TYPES>
+	<!-- This defines types for resampling definitions. -->
+	
+	<!-- ************* -->
+	<!-- IMPORTS       -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- SUBSTRUCTURES -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- TOPLEVELTYPES -->
+	<!-- ************* -->
+	
+	<TYPE>
+		<!-- The states which particle to resample. -->
+		<NAME>RESAMPLE</NAME>
+		<!-- The particle to get data for. -->
+		<INTEGER>
+			<NAME>PARTICLE</NAME>
+			<DEPTH>64</DEPTH>
+			<LENGTH>1</LENGTH>
+		</INTEGER>
+	</TYPE>
+	
+</TYPES>

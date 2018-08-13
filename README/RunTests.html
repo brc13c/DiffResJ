@@ -1,0 +1,27 @@
+<HTML>
+<HEAD></HEAD>
+<BODY>
+
+Several test cases are provided to show the various ways DiffResJ can be used. All of them are located in the tests folder.<BR><BR>
+<HR>
+<BR>
+
+BatteryA and BatteryB are single runs of a toy model: atoms move on a one dimensional lattice, randomly changing velocity every time unit.
+Both batteries run by streaming data from the hard drive after splitting up the files; follow these examples if your data is extremely large (and maybe go grab a sandwich).
+Three different lengths of simulation are provided (these mirror the cases in the main paper).
+BatteryA works via mean squared displacement (MSD), and BatteryB works via velocity autocorrelation (VAC).<BR><BR>
+
+BatteryC and BatteryD are single runs of a Lennard-Jones fluid in LAMMPS.
+If you want to run these, you will need the LAMMPS executable (lmp_serial) on your path.
+These work entirely in RAM; follow these examples if your data will fit in your machine's RAM.
+The lengths mirros those in the main paper.
+BatteryC works via MSD, BatteryD via VAC.<BR><BR>
+
+BatteryE runs a cosine potential fluid in LAMMPS 200 times. This is an example of how the data in the main paper were generated.
+If you want to run these, you will need m4 on your path.
+This is more for those trying to figure out the logic in the main paper: however, you may use this approach to determine your worst case underestimation.<BR><BR>
+<HR>
+<a href="README.html">Back to Index</a>
+
+</BODY>
+</HTML>

@@ -1,0 +1,40 @@
+<TYPES>
+	<!-- This defines types for square displacement data. -->
+	
+	<!-- ************* -->
+	<!-- IMPORTS       -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- SUBSTRUCTURES -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- TOPLEVELTYPES -->
+	<!-- ************* -->
+	
+	<TYPE>
+		<!-- This denotes the lag for the following crop of displacements. -->
+		<NAME>TIME</NAME>
+		<!-- The lag. -->
+		<FLOAT>
+			<NAME>LAG</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>1</LENGTH>
+		</FLOAT>
+	</TYPE>
+	
+	<TYPE>
+		<!-- The displacement -->
+		<NAME>DISPLACEMENT</NAME>
+		<!-- The value. -->
+		<FLOAT>
+			<NAME>VALUE</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>1</LENGTH>
+		</FLOAT>
+	</TYPE>
+	
+</TYPES>

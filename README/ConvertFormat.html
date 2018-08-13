@@ -1,0 +1,35 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head></head>
+<body>These tools utilize a custom binary format for trajectories, the
+mdp.sdb format. In order to use these programs, your own trajectories
+must be converted to this format. To this end, three conversion programs
+are provided, one to convert from a LAMMPS text dump file, one for XYZ files, and one to
+convert from a custom XML format (described in <a href="FileFormat.html">Produce trajectory data</a>).<br><br>To
+convert from the XML format, the program ConvertSDXtoSDB from the
+converters package can be run. This program only needs the name of the
+source XML file and the name of the file to generate. As an example,
+the following command converts an XML trajectory file named
+ParticleData.xml to an mdp.sdb file named ParticleData.mdp.sdb.<br><br>
+
+java -cp PATH/TO/DIFFRESJ converters.ConvertSDXtoSDB -src=ParticleData.xml -dst=ParticleData.mdp.sdb<br><br>In
+order to convert LAMMPS dump files, they must contain atom information
+in the following order: id, type, unwrapped x coordinate [, unwrapped y
+coordinate, unwrapped z coordinate], x velocity [, y velocity, z
+velocity]. Given a dump in this format, the program LAMMPSDumpToSDX can
+convert it to the previously mentioned XML format. This program
+requires the source dump file, the name of the file to generate, the
+dimensionality of the simulation (1d, 2d, 3d) and the timestep of the
+simulation. As an example, the following command converts a LAMMPS dump
+named melt.dump (containing two dimensional data with a timestep of
+0.001) to an XML file named ParticleData.xml.<br><br>
+
+java -cp PATH/TO/DIFFRESJ converters.LAMMPSDumpToSDX -src=melt.dump -dst=ParticleData.xml -dim=2 -tim=0.001<br><br>XYZ
+files can be converted using the XYZToSDX program. This program
+requires the name of the xyz file, the name of the file to generate,
+the dimensionality of the simulation, and the time between timesteps in
+the simulation. As an example, the following command converts an XYZ
+file named melt.xyz (that contains 3D data every 0.001 time units) to
+an XML file named ParticleData.xml<br><br>
+
+java -cp PATH/TO/DIFFRESJ converters.XYZToSDX -src=melt.xyz -dst=ParticleData.xml -dim=3 -tim=0.001<br><br><hr style="width: 100%; height: 2px;"><a href="README.html">Back to Index</a>
+</body></html>

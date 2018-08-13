@@ -1,0 +1,48 @@
+<TYPES>
+	<!-- This defines types for molecular dynamics trajectory data. -->
+	<!-- These programs assume a constant time step. -->
+	
+	
+	<!-- ************* -->
+	<!-- IMPORTS       -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- SUBSTRUCTURES -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- TOPLEVELTYPES -->
+	<!-- ************* -->
+	
+	<TYPE>
+		<!-- This denotes a new time step in the simulation. -->
+		<NAME>TIME</NAME>
+		<!-- The new current time. -->
+		<FLOAT>
+			<NAME>NEWTIME</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>1</LENGTH>
+		</FLOAT>
+	</TYPE>
+	
+	<TYPE>
+		<!-- This contains trajectory data about a particle. -->
+		<NAME>PARTICLE</NAME>
+		<!-- The current position of the particle. -->
+		<FLOAT>
+			<NAME>POSITION</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>-1</LENGTH>
+		</FLOAT>
+		<!-- The current velocity of the particle. -->
+		<FLOAT>
+			<NAME>VELOCITY</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>-1</LENGTH>
+		</FLOAT>
+	</TYPE>
+</TYPES>

@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head></head>
+<body>The GUI provides a simple method for providing values to the
+command line programs. The combo box at the top of the window allows
+the user to select what operation they want to perform.<br><br>The
+first thing likely to be performed is conversion of trajectory files to
+the mdp.sdb format. The convert screen collects all the options for
+converting between the various supported formats. All conversions need
+the source file and the file to write (destination). Converting from
+LAMMPS also needs the dimensionality of the system (1d, 3d), and the
+timestep used in the file.<br><div style="text-align: center;"><img src="GUI_Con.png" style="width: 500px; height: 450px;" alt="Screen for converting (in this case, from LAMMPS)."><br><div style="text-align: left;">When all options have been specified, just press the "Convert" button, and wait for the conversion to finish.<br><br>The
+process for performing analysis on velocity autocorrelation is fairly
+simmilar. The source trajectory (in the mdp.sdb format), the file to
+write to (destination), and a folder to put intermediate results into
+need to be specified. In addition, the number of resamples to use and
+the dimensionality of the data (1d, 3d) need to be specified. Also, if
+using the clip repeat algorithm, the number of timesteps to clip by
+needs to be specified, and if using the multi tau algorithm, the number
+of blocks to aggregate at each level needs to be specified. You also
+have the option to use the in-ram algorithms (faster), or the disk
+algorithms (slower, but can handle huge trajectories).<br><div style="text-align: center;"><img src="GUI_VAC.png" style="width: 500px; height: 450px;" alt="Screen for calculating diffusion coefficient from velocity autocorrelation."><br></div>When all options have been specified, just press the "Go" button, and wait for the calculations to finish.<br><br>The
+process for mean squared displacement is also similar. In addition to
+what needs to be specified for velocity, the user needs to specify the
+curvature at which data should start being considered (this algorithm
+skips the initial data with a high curvature; set this to a very large
+value to use all data), as well as the signal to noise ratio at which
+data should stop being used (this algorithm stops once the displacement
+becomes dominated by noise; set this to zero to use all data).<br><div style="text-align: center;"><img src="GUI_MSD.png" style="width: 500px; height: 450px;" alt="Screen for calculating diffusion coefficients from position data."></div></div></div><hr style="width: 100%; height: 2px;"><a href="README.html">Back to Index</a>
+</body></html>

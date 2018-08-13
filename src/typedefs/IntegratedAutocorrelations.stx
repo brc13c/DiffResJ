@@ -1,0 +1,28 @@
+<TYPES>
+	<!-- This defines types for integrated autocorrelation data. -->
+	
+	<!-- ************* -->
+	<!-- IMPORTS       -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- SUBSTRUCTURES -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- TOPLEVELTYPES -->
+	<!-- ************* -->
+	
+	<TYPE>
+		<!-- The integral of a particles velocity autocorrelation across lag. -->
+		<NAME>INTEGRATED_AUTOCORRELATION</NAME>
+		<!-- The integral. -->
+		<FLOAT>
+			<NAME>VALUE</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>1</LENGTH>
+		</FLOAT>
+	</TYPE>
+	
+</TYPES>

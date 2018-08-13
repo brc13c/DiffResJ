@@ -1,0 +1,367 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head></head>
+<body>Both the GUI and the CLI program load a full time-step of data into memory at a given time.
+If the number of particles you are dealing with is less than one million,
+that should fit in the main memory of a modern PC. However, you may have a large number of particles,
+or you may want to speed up the computation. In both cases, you'll have to manually run each stage
+of the program.<br><br>
+
+<a href="#GENRESAMP">GENERATING RESAMPLE FILES</a><br>
+<a href="#SPLITDATA">SPLITTING DATA</a><br>
+<a href="#VELAUTO">VELOCITY AUTOCORRELATION</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#CALCVELAUTO">CALCULATING AUTOCORRELATION</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#INTVELAUTO">INTEGRATING AUTOCORRELATION</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#COLVELAUTO">COLLECTING DIFFUSION COEFFICIENTS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#RESVELAUTO">RESAMPLING DIFFUSION COEFFICIENTS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#DIFFVELAUTO">CALCULATING DIFFUSION COEFFICIENTS</a><br>
+<a href="#MSDISP">MEAN SQUARE DISPLACEMENT</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#MSDISPCALCSQDISP">CALCULATING SQUARE DISPLACEMENT</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#MSDISPCOLSQDISP">COLLECTING SQUARE DISPLACEMENT</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#MSDISPRESSQDISP">RESAMPLING SQUARE DISPLACEMENT</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#MSDISPAVGMSDISP">AVERAGING SQUARE DISPLACEMENT</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#MSDISPFITDIFF">FITTING DIFFUSION COEFFICIENTS</a><br>
+<a href="#COLDIFFCOEFFS">COLLECTING RESAMPLED COEFFICIENTS</a><br>
+<a href="#SUMDIFFCOEFFS">SUMMARIZING RESAMPLED COEFFICIENTS</a><br>
+<br>
+<hr>
+<a name="GENRESAMP"></a>
+GENERATING RESAMPLE FILES<br><br>
+
+The first step is to generate resample files for your trajectory data. 
+These files are used to estimate the error in the diffusion coefficient (by resampling from the trajectory data).
+The first phase is to generate raw lists of particle numbers.
+The program for this is located in the resample package (GenerateResamples), and expects as arguments the
+trajectory file, a prefix for generated files, and the number of files to generate.<br><br>
+
+As an example, if you wanted to generate 42 resamples for Trajectory.mdp.sdb, the following command;<br><br>
+
+java -cp PATH/TO/DIFFRESJ resample.GenerateResamples -for=Trajectory.mdp.sdb -nam=Resamp -num=42<br><br>
+
+would generate 42 files named Resamp##.rsm.sdb containing lists of particle indices.<br><br>
+
+The previous program generates resample files in random order;
+however, the actual resampling programs expect these files to be sorted in ascending order.
+So, the next phase is to sort the resample files.
+For this, you'll use another program in the resample package: SortResamples.
+SortResamples expects six arguments: the resample file prefix, the file index to sort from,
+the file index to sort to, the sorted resample file prefix, and two working files.
+The file indices need to have leading zeroes if the resample files have more significant digits in their names
+(for example, if you made 1000 files, index 1 should be written as 00001).
+The working files need to be two file names you aren't using.<br><br>
+
+As an example, if you wanted to sort the 42 resample files generated above, the following command;<br><br>
+
+java -cp PATH/TO/DIFFRESJ resample.SortResamples -spr=Resamp -low=00 -hig=41 -dpr=SortedResample -wk1=working1 -wk2=working2<br><br>
+
+would generate 42 files named SortedResample##.srs.sdb containing the sorted contents of Resamp##.rsm.sdb
+(it would also clobber and delete anything you may have had in working1 and working2).<br><br>
+
+<hr>
+<a name="SPLITDATA"></a>
+SPLITTING DATA<br><br>
+
+The next step is to split the trajectory data into multiple files.
+This is accomplished by using splits.SplitData, which takes the name of the trajectory file, the number
+of files to split it into, and the prefix for each generated file, and will parcel the trajectory data into
+smaller files.<br><br>
+
+As an example, if you have a file Trajectory.mdp.sdb, the following command;<br><br>
+
+java -cp PATH/TO/DIFFRESJ splits.SplitData -src=Trajectory.mdp.sdb -num=10 -dpr=Trajectory<br><br>
+
+will split the data in Trajectory.mdp.sdb into 10 files named Trajectory##.mdp.sdb,
+with each number representing a different set of particles.<br><br>
+
+It's worth noting that, at this point, each split file can be processed independently.<br><br>
+
+<hr>
+<br>
+Up to this point, all the steps have been the same regardless of whether you wanted to calculate the 
+diffusion coefficient by examining mean square displacement or velocity autocorrelation. At this point,
+the two differ. The procedure for finding diffusion coefficients from velocity autocorrelation will come
+first, followed by mean square displacement.<br><br>
+
+<hr>
+<hr>
+<a name="VELAUTO"></a>
+VELOCITY AUTOCORRELATION
+<hr>
+<hr>
+<a name="CALCVELAUTO"></a>
+CALCULATING AUTOCORRELATION<br><br>
+
+Before you can do anything with autocorrelation, you'll need to calculate it. This can be done with
+the CalculateAutocorrelation program in the vac package. It takes three arguments: the trajectory file
+to calculate the autocorrelations for, the file to write autocorrelations to, and a working file.<br><br>
+
+As an example, if you have a file Trajectory07.mdp.sdb, the following command;<br><br>
+
+java -cp PATH/TO/DIFFRESJ vac.CalculateAutocorrelation -src=Trajectory07.mdp.sdb -dst=Autocorrelation07.vac.sdb -wrk=working07<br><br>
+
+will calculate the velocity autocorrelations for the velocities of each particle at different lags,
+and write the results to Autocorrelation07.vac.sdb.<br><br>There
+are several other versions of this program that run in less time, but
+are less thorough in calculating the autocorrelation. The first option
+is CalculateAutocorrelationOnePass, which calculates the
+autocorrelation at each lag as the result of one dot product (current
+time versus time zero). It only takes two options, the source
+trajectory and the output file. The following is an example invocation.<br><br>
+
+java -cp PATH/TO/DIFFRESJ vac.CalculateAutocorrelationOnePass -src=Trajectory07.mdp.sdb -dst=Autocorrelation07.vac.sdb<br><br>The
+next option is CalculateAutocorrelationClipRepeat, which behaves like
+CalculateAutocorrelationOnePass but, after some number of timesteps,
+stops looking at the initial time and designates a new time zero (with
+the autocorrelation averaged across the clipping windows). It takes the
+same arguments as CalculateAutocorrelation, plus one more argument to
+specify the clipping period. The following is an example that clips
+after 500 timesteps.<br><br>
+java -cp PATH/TO/DIFFRESJ vac.CalculateAutocorrelationClipRepeat
+-src=Trajectory07.mdp.sdb -dst=Autocorrelation07.vac.sdb -wrk=working07
+-clp=500<br><br>The
+last option is CalculateAutocorrelationMultiTau, which performs a
+variant of the multi-tau method (link) that only uses the first
+velocity in each block, rather than averaging everything in the block.
+This takes three arguments, the source trajectory, the output file, and
+the number of lower level blocks to include in a higher level block.
+The following is an example that aggregates 16 blocks for each level of
+course graining.<br><br>
+
+java -cp PATH/TO/DIFFRESJ vac.CalculateAutocorrelationMultiTau -src=Trajectory07.mdp.sdb -dst=Autocorrelation07.vac.sdb -agg=16<br><br>
+
+<hr>
+<a name="INTVELAUTO"></a>
+INTEGRATING AUTOCORRELATION<br><br>
+
+The next task is to integrate the velocity autocorrelation of each particle individually (these integrals
+will be averaged after resampling). This can be done with IntegrateAutocorrelation (in vac). This program
+takes three arguments: the name of the individual autocorrelations to read in, the name of the
+integrated autocorrelations to write out, and the dimensionality of the source simulation.<br><br>
+
+As an example, if you have a file named Autocorrelation07.vac.sdb, the following command;<br><br>
+
+java -cp PATH/TO/DIFFRESJ vac.IntegrateAutocorrelation -src=Autocorrelation07.vac.sdb -dst=SingleDiff07.ivc.sdb -dim=1 -vcr=0.05<br><br>
+will calculate a diffusion coefficient for each particle from each
+particle's velocity autocorrelation
+(assuming the particles are free to move in one dimension). This
+particular command will cease integrating once the mean square
+autocorrelation drops below 0.05 times the square of the initial
+autocorrelation (set to 0 to integrate all data; this will likely
+increase uncertainty).<br>
+
+<hr>
+<a name="COLVELAUTO"></a>
+COLLECTING DIFFUSION COEFFICIENTS<br><br>
+
+So at this point, you should have files containing the diffusion coefficients based off of each particle.
+However, the data are probably scattered across different files (see SPLITTING DATA), so the next task is
+to collect all the data back into one file using vac.CollectAutocorrelations. This takes one argument
+specifying the name of the output file, and then a list of arguments specifying the files to collect.<br><br>
+
+As an example, if you have ten files named SingleDiff00.ivc.sdb through SingleDiff09.ivc.sdb, the following command;<br><br>
+java -cp PATH/TO/DIFFRESJ vac.CollectAutocorrelations -dst=SingleDiff.ivc.sdb
+-src=SingleDiff00.ivc.sdb -src=SingleDiff01.ivc.sdb -src=SingleDiff02.ivc.sdb
+-src=SingleDiff03.ivc.sdb -src=SingleDiff04.ivc.sdb -src=SingleDiff05.ivc.sdb
+-src=SingleDiff06.ivc.sdb -src=SingleDiff07.ivc.sdb -src=SingleDiff08.ivc.sdb
+-src=SingleDiff09.ivc.sdb<br><br>
+
+will collect the particle diffusion coefficients into a single file. Also, it's worth mentioning that,
+if the order of the input files for CollectAutocorrelations is the same as the order from SplitData,
+the coefficients in the final file will be in the same order as the particles in the trajectory data (while
+these programs are unconcerned with particle order, other programs might not be).<br><br>
+
+<hr>
+<a name="RESVELAUTO"></a>
+RESAMPLING DIFFUSION COEFFICIENTS<br><br>
+
+The next step is to actually perform the resampling. This can be done using the program
+vac.ResampleParticleDiffusion, which takes the original particle diffusion file, and pairs
+of resample file names and output file names.<br><br>
+
+As an example, if you have three resample files (SortedResamp0.srs.sdb through SortedResamp2.srs.sdb)
+and a collection of per-particle diffusion coefficients (SingleDiff.ivc.sdb), the following command;<br><br>
+java -cp PATH/TO/DIFFRESJ vac.ResampleParticleDiffusion
+-src=SingleDiff.ivc.sdb -rsi=SortedResamp0.srs.sdb -rso=ResampDiff0.ivc.sdb
+-rsi=SortedResamp1.srs.sdb -rso=ResampDiff1.ivc.sdb -rsi=SortedResamp2.srs.sdb
+-rso=ResampDiff2.ivc.sdb<br><br>
+
+will create three files (ResampDiff 0 through 2) containing the resampled data from SingleDiff.<br><br>
+
+<hr>
+<a name="DIFFVELAUTO"></a>
+CALCULATING DIFFUSION COEFFICIENTS<br><br>
+
+The next step is to find the average diffusion coefficient for each resample. This can be done using
+the program vac.AverageParticleCoefficients. This takes the name of the file to write global diffusion
+coefficients to, then one or more resampled particle diffusion coefficient files.<br><br>
+
+As an example, if you have three files containing resampled data (ResampDiff0.ivc.sdb through ResampDiff2.ivc.sdb),
+the following command;<br><br>
+java -cp PATH/TO/DIFFRESJ vac.AverageParticleCoefficients
+-dst=AvgDiffCoeffs.dif.sdb -src=ResampDiff0.ivc.sdb -src=ResampDiff1.ivc.sdb
+-src=ResampDiff2.ivc.sdb<br><br>
+
+will create a file named AvgDiffCoeffs.dif.sdb which contains the particle averaged diffusion coefficients
+for each of the three input files.<br><br>
+
+It's worth noting that you don't have to run all the resample files through this program at
+the same time (this can be done in groups of resample files, with the pieces put together later
+using <a href="#COLDIFFCOEFFS">another program</a>).
+
+<hr>
+<hr>
+<a name="MSDISP"></a>
+MEAN SQUARE DISPLACEMENT
+<hr>
+<hr>
+<a name="MSDISPCALCSQDISP"></a>
+CALCULATING SQUARE DISPLACEMENT<br><br>
+
+The first step in getting diffusion coefficients from mean square displacement is to
+find the square displacement of all the particles (averaged across all possible lags).
+This can be done with the CalculateSquareDisplacement program in the msd package. It takes
+three arguments: the trajectory file, the file to write square displacements to, and a working file.<br><br>
+
+As an example, if you have a file Trajectory07.mdp.sdb, the following command;<br><br>
+java -cp PATH/TO/DIFFRESJ msd.CalculateSquareDisplacement
+-src=Trajectory07.mdp.sdb -dst=SquareDisplacement07.sd.sdb
+-wrk=working07<br><br>
+
+will calculate the square displacement for the positions of each particle at different lags,
+and write the results to SquareDisplacement07.sd.sdb.<br><br>There are several other versions of this program that run in
+less time, but are less thorough in calculating the displacement.
+The first option is CalculateSquareDisplacementOnePass, which calculates
+the displacement at each lag as the result of one difference
+(current time versus time zero). It only takes two options, the source
+trajectory and the output file. The following is an example invocation.<br><br>
+
+java -cp PATH/TO/DIFFRESJ msd.CalculateSquareDisplacementOnePass -src=Trajectory07.mdp.sdb -dst=SquareDisplacement07.sd.sdb<br><br>The
+next option is CalculateSquareDisplacementClipRepeat, which behaves
+like&nbsp;CalculateSquareDisplacementOnePass but, after some number of
+timesteps,
+stops looking at the initial time and designates a new time zero (with
+the displacement averaged across the clipping windows). It takes the
+same arguments as&nbsp;CalculateSquareDisplacement, plus one more
+argument to
+specify the clipping period. The following is an example that clips
+after 500 timesteps.<br><br>
+java -cp PATH/TO/DIFFRESJ msd.CalculateSquareDisplacementClipRepeat
+-src=Trajectory07.mdp.sdb -dst=SquareDisplacement07.sd.sdb
+-wrk=working07 -clp=500<br><br>The
+last option is CalculateSquareDisplacementMultiTau, which performs a
+variant of the multi-tau method (link) that only uses the first
+position in each block, rather than averaging everything in the block.
+This takes three arguments, the source trajectory, the output file, and
+the number of lower level blocks to include in a higher level block.
+The following is an example that aggregates 16 blocks for each level of
+course graining.<br><br>
+java -cp PATH/TO/DIFFRESJ msd.CalculateSquareDisplacementMultiTau
+-src=Trajectory07.mdp.sdb -dst=SquareDisplacement07.sd.sdb -agg=16<br><br>
+
+<hr>
+<a name="MSDISPCOLSQDISP"></a>
+COLLECTING SQUARE DISPLACEMENT<br><br>
+
+Next, the individual files need to be collected together for resampling. This can be done with
+the CollectSquareDisplacement program in the msd package. This takes one argument
+specifying the name of the output file, and then a list of arguments specifying the files to collect.<br><br>
+
+As an example, if you have ten files named SingleDisp00.sd.sdb through SingleDisp00.sd.sdb, the following command;<br><br>
+java -cp PATH/TO/DIFFRESJ msd.CollectSquareDisplacement
+-dst=SingleDisp.sd.sdb -src=SingleDisp00.sd.sdb -src=SingleDisp01.sd.sdb
+-src=SingleDisp02.sd.sdb -src=SingleDisp03.sd.sdb -src=SingleDisp04.sd.sdb
+-src=SingleDisp05.sd.sdb -src=SingleDisp06.sd.sdb -src=SingleDisp07.sd.sdb
+-src=SingleDisp08.sd.sdb -src=SingleDisp09.sd.sdb<br><br>
+
+will collect the square displacements into a single file. Also, it's worth mentioning that,
+if the order of the input files for CollectSquareDisplacement is the same as the order from SplitData,
+the displacements in the final file will be in the same order as the particles in the trajectory data (while
+these programs are unconcerned with particle order, other programs might not be).<br><br>
+
+<hr>
+<a name="MSDISPRESSQDISP"></a>
+RESAMPLING SQUARE DISPLACEMENT<br><br>
+
+The next step is to actually perform the resampling. This can be done using the program
+msd.ResampleSquareDisplacement, which takes the original square displacement file, and pairs
+of resample file names and output file names.<br><br>
+
+As an example, if you have three resample files (SortedResamp0.srs.sdb through SortedResamp2.srs.sdb)
+and a collection of particle displacements (SingleDisp.sd.sdb), the following command;<br><br>
+java -cp PATH/TO/DIFFRESJ msd.ResampleSquareDisplacement
+-src=SingleDisp.sd.sdb -rsi=SortedResamp0.srs.sdb -rso=ResampDisp0.sd.sdb
+-rsi=SortedResamp1.srs.sdb -rso=ResampDisp1.sd.sdb -rsi=SortedResamp2.srs.sdb
+-rso=ResampDisp2.sd.sdb<br><br>
+
+will create three files (ResampDisp 0 through 2) containing the resampled data from SingleDisp.<br><br>
+
+<hr>
+<a name="MSDISPAVGMSDISP"></a>
+AVERAGING SQUARE DISPLACEMENT<br><br>
+
+Next, each resampled file will have all the individual square displacements averaged across all particles.
+This is done using msd.AverageMeanSquareDisplacement, which takes the name of your resampled data file,
+and the name of the output file.<br><br>
+
+As an example, if you have a resampled square displacement file named ResampDisp0.sd.sdb, the following command;<br><br>
+
+java -cp PATH/TO/DIFFRESJ msd.AverageMeanSquareDisplacement -src=ResampDisp0.sd.sdb -dst=ResampDisp0.msd.sdb<br><br>
+
+will average the square displacement across the particles in ResampDisp0.sd.sdb and put the results in ResampDisp0.msd.sdb.<br><br>
+
+<hr>
+<a name="MSDISPFITDIFF"></a>
+FITTING DIFFUSION COEFFICIENTS<br><br>
+
+The next step is to fit the diffusion coefficients from the resampled data. This can be done with
+msd.FitDiffusionCoefficient, which takes the maximum curvature to allow, the minimum signal to noise ratio,
+the dimensionality of the simulation, the name of the output diffusion coefficient file,
+and one or more input files.<br><br>
+
+As an example, if you have two mean square displacement files ResampDisp0.msd.sdb and ResampDisp1.sd.sdb, the following command;<br><br>
+java -cp PATH/TO/DIFFRESJ msd.FitDiffusionCoefficient -cur=0.001
+-sig=0.5 -dim=1 -dst=AvgDiffCoeffs.dif.sdb -src=ResampDisp0.msd.sdb
+-src=ResampDisp1.msd.sdb<br><br>
+
+will fit the diffusion coefficients from the data (that came from a one dimensional simulation)
+in ResampDisp0.msd.sdb and ResampDisp1.msd.sdb (skipping data until the curvature drops below 0.001,
+and continuing until the signal to noise drops to 0.5), and put the resulting diffusion coefficients
+into AvgDiffCoeffs.dif.sdb.<br><br>
+
+<hr>
+<hr>
+<a name="COLDIFFCOEFFS"></a>
+COLLECTING RESAMPLED COEFFICIENTS<br><br>
+
+If you calculated global diffusion coefficients in multiple batches, you'll need to collect
+all the disparate files into a single file. In order to do this, you'll need to use the
+diffusion.CollectDiffusionFiles program, which takes the name of an output diffusion file,
+and one or more input diffusion files.<br><br>
+
+As an example, if you have two diffusion coefficient files (AvgDiffCoeffs0.dif.sdb and AvgDiffCoeffs1.dif.sdb),
+the following command;<br><br>
+java -cp PATH/TO/DIFFRESJ diffusion.CollectDiffusionFiles
+-dst=AvgDiffCoeffs.dif.sdb -src=AvgDiffCoeffs0.dif.sdb
+-src=AvgDiffCoeffs1.dif.sdb<br><br>
+
+will collect the individual files into AvgDiffCoeffs.dif.sdb.<br><br>
+
+<hr>
+<a name="SUMDIFFCOEFFS"></a>
+SUMMARIZING RESAMPLED COEFFICIENTS<br><br>
+
+The last step is to get the average and standard deviation of the collection of diffusion coefficients
+using diffusion.DiffusionFileStatistics. This program takes the name of the diffusion coefficient collection
+file to read, the name of the statistics file to write, and (optionally) a flag to write the final result
+as an XML file (as opposed to a binary file).<br><br>
+
+As an example, if you have a diffusion coefficient collection file named AvgDiffCoeffs.dif.sdb, the following
+command;<br><br>
+
+java -cp PATH/TO/DIFFRESJ diffusion.DiffusionFileStatistics -src=AvgDiffCoeffs.dif.sdb -dst=DiffCoeff.dfs.sdx -xml<br><br>
+
+will produce an XML file (DiffCoeff.dfs.sdx) containing the average and standard deviation of the coefficients
+in AvgDiffCoeffs.dif.sdb;
+
+<hr>
+<a href="README.html">Back to Index</a>
+</body></html>

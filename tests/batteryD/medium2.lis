@@ -1,0 +1,22 @@
+units lj
+dimension 3
+boundary p p p
+atom_style atomic
+lattice sc 0.8442
+region box block 0 5 0 5 0 5
+create_box 1 box
+create_atoms 1 box
+mass 1 1.0
+velocity all create 0.728 1337
+pair_style lj/cut 2.5
+pair_coeff 1 1 1.0 1.0 2.5
+neighbor 0.3 bin
+neigh_modify every 20 delay 0 check no
+fix 1 all nvt temp 1.50 1.50 0.2
+timestep 0.01
+thermo 5
+run 1000
+fix 1 all nvt temp 1.50 1.50 1.0
+run 10000
+dump id all custom 1 medium2.dump id type xu yu zu vx vy vz
+run 200

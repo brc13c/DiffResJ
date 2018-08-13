@@ -1,0 +1,35 @@
+<TYPES>
+	<!-- This defines types for diffusion coefficient estimates with error. -->
+	
+	<!-- ************* -->
+	<!-- IMPORTS       -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- SUBSTRUCTURES -->
+	<!-- ************* -->
+	
+	<!-- ************* -->
+	<!-- TOPLEVELTYPES -->
+	<!-- ************* -->
+	
+	<TYPE>
+		<!-- An estimate for a diffusion coefficient. -->
+		<NAME>DIFFCOEFF</NAME>
+		<!-- The estimate. -->
+		<FLOAT>
+			<NAME>VALUE</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>1</LENGTH>
+		</FLOAT>
+		<!-- The estimated error. -->
+		<FLOAT>
+			<NAME>ERROR</NAME>
+			<EXPONENTDEPTH>11</EXPONENTDEPTH>
+			<MANTISSADEPTH>52</MANTISSADEPTH>
+			<LENGTH>1</LENGTH>
+		</FLOAT>
+	</TYPE>
+	
+</TYPES>
